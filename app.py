@@ -12,6 +12,7 @@ st.set_page_config(
     page_icon="🤖",
     layout="wide"
 )
+
 st.markdown(
     """
     <h1 style="text-align:center;">
@@ -45,29 +46,29 @@ if resume is not None:
         suffix=".pdf"
     ) as tmp:
 
-        tmp.write(pdf_bytes)
-        pdf_path = tmp.name
-        
+        tmp.write(resume_bytes)
+        resume_path = tmp.name
+
     with st.spinner("Parsing Resume..."):
 
         resume_text = extract_resume_text(
             resume_path
         )
 
-        st.success("Resume Uploaded Successfully")
+    st.success("Resume Uploaded Successfully")
 
     resume_pdf = base64.b64encode(
         resume_bytes
     ).decode()
 
     resume_display = f"""
-        <iframe
-            src="data:application/pdf;base64,{resume_pdf}"
-            width="100%"
-            height="550"
-            type="application/pdf">
-        </iframe>
-        """
+    <iframe
+        src="data:application/pdf;base64,{resume_pdf}"
+        width="100%"
+        height="550"
+        type="application/pdf">
+    </iframe>
+    """
 
     with st.expander(
         "📄 Resume Preview",
@@ -75,7 +76,7 @@ if resume is not None:
     ):
 
         st.info(
-            "If the preview doesn't load in your browser, click the Download Resume button below."
+            "If the preview doesn't load in your browser, use the Download Resume button below."
         )
 
         st.markdown(
@@ -118,47 +119,174 @@ if resume is not None:
         )
 
 st.divider()
-if "question" in st.session_state:
 
-    st.header("🎤 Interview Question")
+st.header("📚 Upload Interview Questions PDF")
 
-    st.info(
-        st.session_state.question
+interview_pdf = st.file_uploader(
+    "Upload Interview Questions PDF",
+    type=["pdf"]
+)
+
+if interview_pdf is not None:
+
+    pdf_bytes = interview_pdf.getvalue()
+
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".pdf"
+    ) as tmp:
+
+        tmp.write(pdf_bytes)
+        pdf_path = tmp.name
+
+    st.success(
+        "Interview Questions PDF Uploaded Successfully"
     )
 
-    answer = st.text_area(
-        "Enter Your Answer",
-        height=220,
-        placeholder="Write your answer here..."
+    questions_pdf = base64.b64encode(
+        pdf_bytes
+    ).decode()
+
+    questions_display = f"""
+    <iframe
+        src="data:application/pdf;base64,{questions_pdf}"
+        width="100%"
+        height="550"
+        type="application/pdf">
+    </iframe>
+    """
+
+    with st.expander(
+        "📖 Interview Questions Preview",
+        expanded=False
+    ):
+
+        st.info(
+            "If the preview doesn't load in your browser, use the Download button below."
+        )
+
+        st.markdown(
+            questions_display,
+            unsafe_allow_html=True
+        )
+
+    st.download_button(
+        "📥 Download Interview Questions PDF",
+        data=pdf_bytes,
+        file_name=interview_pdf.name,
+        mime="application/pdf",
+        use_container_width=True
     )
 
     if st.button(
-        "Evaluate Answer",
+        "Generate Interview Question",
         use_container_width=True
     ):
 
-        if answer.strip() == "":
+        with st.spinner(
+            "Generating Interview Question..."
+        ):
 
-            st.warning(
-                "Please enter your answer."
+            vectordb = create_vector_store(
+                pdf_path
             )
 
-        else:
+            question = generate_question(
+                vectordb
+            )
 
-            with st.spinner(
-                "Evaluating Answer..."
-            ):
+            st.session_state.question = question
 
-                feedback = evaluate_answer(
-                    st.session_state.question,
-                    answer
-                )
+        st.success(
+            "Interview Question Generated Successfully!"
+        )
 
-                st.session_state.feedback = feedback
+st.divider()
+
+st.header("📚 Upload Interview Questions PDF")
+
+interview_pdf = st.file_uploader(
+    "Upload Interview Questions PDF",
+    type=["pdf"]
+)
+
+if interview_pdf is not None:
+
+    pdf_bytes = interview_pdf.getvalue()
+
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".pdf"
+    ) as tmp:
+
+        tmp.write(pdf_bytes)
+        pdf_path = tmp.name
+
+    st.success(
+        "Interview Questions PDF Uploaded Successfully"
+    )
+
+    questions_pdf = base64.b64encode(
+        pdf_bytes
+    ).decode()
+
+    questions_display = f"""
+    <iframe
+        src="data:application/pdf;base64,{questions_pdf}"
+        width="100%"
+        height="550"
+        type="application/pdf">
+    </iframe>
+    """
+
+    with st.expander(
+        "📖 Interview Questions Preview",
+        expanded=False
+    ):
+
+        st.info(
+            "If the preview doesn't load in your browser, use the Download button below."
+        )
+
+        st.markdown(
+            questions_display,
+            unsafe_allow_html=True
+        )
+
+    st.download_button(
+        "📥 Download Interview Questions PDF",
+        data=pdf_bytes,
+        file_name=interview_pdf.name,
+        mime="application/pdf",
+        use_container_width=True
+    )
+
+    if st.button(
+        "Generate Interview Question",
+        use_container_width=True
+    ):
+
+        with st.spinner(
+            "Generating Interview Question..."
+        ):
+
+            vectordb = create_vector_store(
+                pdf_path
+            )
+
+            question = generate_question(
+                vectordb
+            )
+
+            st.session_state.question = question
+
+        st.success(
+            "Interview Question Generated Successfully!"
+        )
+
+st.divider()
 
 if "feedback" in st.session_state:
-
-    st.divider()
 
     st.header("📊 Interview Evaluation")
 
@@ -172,18 +300,24 @@ if "feedback" in st.session_state:
         )
 
 st.divider()
+
 st.markdown(
     """
     <style>
 
     div.stButton > button {
-        border-radius: 12px;
+        border-radius: 10px;
         height: 3em;
+        font-size: 16px;
         font-weight: 600;
     }
 
     div[data-testid="stExpander"] {
-        border-radius: 12px;
+        border-radius: 10px;
+    }
+
+    textarea {
+        border-radius: 10px !important;
     }
 
     </style>
@@ -193,20 +327,13 @@ st.markdown(
 
 st.markdown(
     """
-    <hr style="margin-top:40px;margin-bottom:15px;">
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <p style="
-        text-align:center;
-        color:gray;
-        font-size:15px;
-    ">
-        🤖 InterviewGPT | Resume Analysis | RAG | Groq
-    </p>
+    <div style="text-align:center;
+                color:gray;
+                font-size:15px;
+                padding-top:20px;
+                padding-bottom:10px;">
+        InterviewGPT | Resume Analysis | RAG | Groq
+    </div>
     """,
     unsafe_allow_html=True
 )
