@@ -1,10 +1,11 @@
+import random
+import re
+
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
-
-import random
 
 
 def create_vector_store(pdf_file):
@@ -45,46 +46,46 @@ def generate_question(vectordb):
 
         text = doc.page_content
 
-        # Split by question mark
-        lines = text.split("?")
+        lines = text.split("\n")
 
         for line in lines:
 
             line = line.strip()
 
-            if len(line) > 5:
-                questions.append(
-                    line + "?"
-                )
+            if not line:
+                continue
 
-    # Remove duplicates
-    questions = list(
-        set(questions)
-    )
+            line = re.sub(r'^\d+[\).\-\s]*', '', line)
 
-    if len(questions) > 0:
+            if len(line) < 10:
+                continue
 
-        return random.choice(
-            questions
-        )
+            if line.lower().startswith("page"):
+                continue
+
+            questions.append(line)
+
+    questions = list(dict.fromkeys(questions))
+
+    if questions:
+
+        return random.choice(questions)
 
     return "No Question Found"
 
 
 if __name__ == "__main__":
 
-    pdf_file = r"F:\Projects_Datav\genai_prompt\Interview Questions.pdf"
+    pdf_file = "Interview Questions.pdf"
 
     vectordb = create_vector_store(
         pdf_file
     )
 
+    print("\nGenerated Questions:\n")
+
     for i in range(5):
 
         print(
-            generate_question(
-                vectordb
-            )
+            f"{i+1}. {generate_question(vectordb)}"
         )
-
-        print("-" * 50)
