@@ -45,8 +45,8 @@ if resume is not None:
         suffix=".pdf"
     ) as tmp:
 
-        tmp.write(resume_bytes)
-        resume_path = tmp.name
+        tmp.write(pdf_bytes)
+        pdf_path = tmp.name
         
     with st.spinner("Parsing Resume..."):
 
@@ -54,131 +54,67 @@ if resume is not None:
             resume_path
         )
 
-    st.success("Resume Uploaded Successfully")
+        st.success("Resume Uploaded Successfully")
+
     resume_pdf = base64.b64encode(
         resume_bytes
     ).decode()
 
     resume_display = f"""
-    <iframe
-        src="data:application/pdf;base64,{resume_pdf}"
-        width="100%"
-        height="550"
-        type="application/pdf">
-    </iframe>
-    """
-
-    col1, col2 = st.columns([2, 1])
-
-    with col1:
-
-        with st.expander(
-            "📄 Resume Preview",
-            expanded=True
-        ):
-
-            st.markdown(
-                resume_display,
-                unsafe_allow_html=True
-            )
-
-    with col2:
-
-        st.subheader("Detected Skills")
-
-        skills = extract_skills(
-            resume_text
-        )
-
-        if skills:
-
-            st.info("### 🛠️ Skills Detected")
-
-            cols = st.columns(2)
-
-            for i, skill in enumerate(skills):
-
-                with cols[i % 2]:
-
-                    st.success(skill.title())
-
-        else:
-
-            st.warning(
-                "No skills detected."
-            )
-
-st.divider()
-
-st.header("📚 Upload Interview Questions PDF")
-
-interview_pdf = st.file_uploader(
-    "Upload Interview Questions PDF",
-    type=["pdf"]
-)
-
-if interview_pdf is not None:
-
-    pdf_bytes = interview_pdf.getvalue()
-
-    with tempfile.NamedTemporaryFile(
-        delete=False,
-        suffix=".pdf"
-    ) as tmp:
-
-        tmp.write(pdf_bytes)
-        pdf_path = tmp.name
-
-    st.success(
-        "Interview Questions PDF Uploaded Successfully"
-    )
-
-    questions_pdf = base64.b64encode(
-        pdf_bytes
-    ).decode()
-
-    questions_display = f"""
-    <iframe
-        src="data:application/pdf;base64,{questions_pdf}"
-        width="100%"
-        height="550"
-        type="application/pdf">
-    </iframe>
-    """
+        <iframe
+            src="data:application/pdf;base64,{resume_pdf}"
+            width="100%"
+            height="550"
+            type="application/pdf">
+        </iframe>
+        """
 
     with st.expander(
-        "📖 Interview Questions Preview",
-        expanded=False
+        "📄 Resume Preview",
+        expanded=True
     ):
 
+        st.info(
+            "If the preview doesn't load in your browser, click the Download Resume button below."
+        )
+
         st.markdown(
-            questions_display,
+            resume_display,
             unsafe_allow_html=True
         )
 
-    if st.button(
-        "Generate Interview Question",
+    st.download_button(
+        "📥 Download Resume",
+        data=resume_bytes,
+        file_name=resume.name,
+        mime="application/pdf",
         use_container_width=True
-    ):
+    )
 
-        with st.spinner(
-            "Generating Interview Question..."
-        ):
+    st.subheader("Detected Skills")
 
-            vectordb = create_vector_store(
-                pdf_path
-            )
+    skills = extract_skills(
+        resume_text
+    )
 
-            question = generate_question(
-                vectordb
-            )
+    if skills:
 
-            st.session_state.question = (
-                question
-            )
+        st.info("### 🛠️ Skills Detected")
 
-        st.success(
-            "Question Generated Successfully!"
+        cols = st.columns(2)
+
+        for i, skill in enumerate(skills):
+
+            with cols[i % 2]:
+
+                st.success(
+                    skill.title()
+                )
+
+    else:
+
+        st.warning(
+            "No skills detected."
         )
 
 st.divider()
