@@ -34,7 +34,8 @@ st.header("📄 Upload Resume")
 
 resume = st.file_uploader(
     "Upload Resume PDF",
-    type=["pdf"]
+    type=["pdf"],
+    key="resume_pdf"
 )
 
 if resume is not None:
@@ -121,10 +122,10 @@ if resume is not None:
 st.divider()
 
 st.header("📚 Upload Interview Questions PDF")
-
 interview_pdf = st.file_uploader(
     "Upload Interview Questions PDF",
-    type=["pdf"]
+    type=["pdf"],
+    key="interview_pdf"
 )
 
 if interview_pdf is not None:
@@ -200,93 +201,67 @@ if interview_pdf is not None:
         st.success(
             "Interview Question Generated Successfully!"
         )
-
 st.divider()
 
-st.header("📚 Upload Interview Questions PDF")
+if "question" in st.session_state:
 
-interview_pdf = st.file_uploader(
-    "Upload Interview Questions PDF",
-    type=["pdf"]
-)
+    st.header("🎤 Interview Question")
 
-if interview_pdf is not None:
-
-    pdf_bytes = interview_pdf.getvalue()
-
-    with tempfile.NamedTemporaryFile(
-        delete=False,
-        suffix=".pdf"
-    ) as tmp:
-
-        tmp.write(pdf_bytes)
-        pdf_path = tmp.name
-
-    st.success(
-        "Interview Questions PDF Uploaded Successfully"
+    st.info(
+        st.session_state.question
     )
 
-    questions_pdf = base64.b64encode(
-        pdf_bytes
-    ).decode()
-
-    questions_display = f"""
-    <iframe
-        src="data:application/pdf;base64,{questions_pdf}"
-        width="100%"
-        height="550"
-        type="application/pdf">
-    </iframe>
-    """
-
-    with st.expander(
-        "📖 Interview Questions Preview",
-        expanded=False
-    ):
-
-        st.info(
-            "If the preview doesn't load in your browser, use the Download button below."
-        )
-
-        st.markdown(
-            questions_display,
-            unsafe_allow_html=True
-        )
-
-    st.download_button(
-        "📥 Download Interview Questions PDF",
-        data=pdf_bytes,
-        file_name=interview_pdf.name,
-        mime="application/pdf",
-        use_container_width=True
+    answer = st.text_area(
+        "Enter Your Answer",
+        height=220,
+        placeholder="Write your answer here..."
     )
 
-    if st.button(
-        "Generate Interview Question",
-        use_container_width=True
-    ):
+    col1, col2 = st.columns([3, 1])
 
-        with st.spinner(
-            "Generating Interview Question..."
-        ):
+    with col1:
 
-            vectordb = create_vector_store(
-                pdf_path
-            )
-
-            question = generate_question(
-                vectordb
-            )
-
-            st.session_state.question = question
-
-        st.success(
-            "Interview Question Generated Successfully!"
+        evaluate = st.button(
+            "Evaluate Answer",
+            use_container_width=True
         )
 
-st.divider()
+    with col2:
 
+        clear = st.button(
+            "Clear",
+            use_container_width=True
+        )
+
+    if clear:
+
+        st.session_state.pop("question", None)
+        st.session_state.pop("feedback", None)
+        st.rerun()
+
+    if evaluate:
+
+        if not answer.strip():
+
+            st.warning(
+                "Please enter your answer before evaluation."
+            )
+
+        else:
+
+            with st.spinner(
+                "Evaluating your answer..."
+            ):
+
+                feedback = evaluate_answer(
+                    st.session_state.question,
+                    answer
+                )
+
+                st.session_state.feedback = feedback
 if "feedback" in st.session_state:
+
+    st.divider()
 
     st.header("📊 Interview Evaluation")
 
@@ -299,6 +274,18 @@ if "feedback" in st.session_state:
             st.session_state.feedback
         )
 
+st.markdown(
+    """
+    <div style="text-align:center;
+                color:gray;
+                font-size:15px;
+                padding-top:20px;
+                padding-bottom:10px;">
+        InterviewGPT | Resume Analysis | RAG | Groq
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 st.divider()
 
 st.markdown(
@@ -321,19 +308,6 @@ st.markdown(
     }
 
     </style>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <div style="text-align:center;
-                color:gray;
-                font-size:15px;
-                padding-top:20px;
-                padding-bottom:10px;">
-        InterviewGPT | Resume Analysis | RAG | Groq
-    </div>
     """,
     unsafe_allow_html=True
 )
