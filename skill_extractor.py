@@ -1,4 +1,4 @@
-SKILLS = skills = [
+SKILLS = [
     "Python", "Java", "C", "C++", "C#", "Go", "Rust", "JavaScript", "TypeScript",
     "HTML", "CSS", "Bootstrap", "React", "Angular", "Vue.js", "Node.js",
     "Express.js", "Django", "Flask", "FastAPI", "Spring Boot",
