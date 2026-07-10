@@ -6,7 +6,7 @@ SKILLS = [
     "SQL", "MySQL", "PostgreSQL", "MongoDB", "SQLite", "Oracle", "Redis",
 
     "Git", "GitHub", "GitLab", "Linux", "Ubuntu", "Windows Server",
-    "Docker", "Kubernetes", "Jenkins", "CI/CD", "DevOps",
+    "Docker", "Kubernetes", "Jenkins", "CI/CD"k, "DevOps",
 
     "AWS", "Azure", "Google Cloud", "Cloud Computing",
 
@@ -100,14 +100,20 @@ SKILLS = [
     "Pediatric Dentistry"
 ]
 
+import re
+
 def extract_skills(text):
 
     found = []
 
     text = text.lower()
 
+    text = re.sub(r"\s+", " ", text)
+
     for skill in SKILLS:
-        if skill in text:
+
+        if skill.lower() in text:
+
             found.append(skill)
 
-    return list(set(found))
+    return sorted(set(found))
