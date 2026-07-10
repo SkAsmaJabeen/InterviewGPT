@@ -6,7 +6,7 @@ SKILLS = [
     "SQL", "MySQL", "PostgreSQL", "MongoDB", "SQLite", "Oracle", "Redis",
 
     "Git", "GitHub", "GitLab", "Linux", "Ubuntu", "Windows Server",
-    "Docker", "Kubernetes", "Jenkins", "CI/CD"k, "DevOps",
+    "Docker", "Kubernetes", "Jenkins", "CI/CD", "DevOps",
 
     "AWS", "Azure", "Google Cloud", "Cloud Computing",
 
