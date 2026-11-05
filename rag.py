@@ -23,12 +23,12 @@ def create_vector_store(pdf_file):
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
-
+    
     vectordb = Chroma.from_documents(
         documents=chunks,
         embedding=embeddings
     )
-
+   
     return vectordb
 
 
@@ -73,8 +73,7 @@ def generate_question(vectordb):
 
 if __name__ == "__main__":
 
-    pdf_file = r"F:\Projects_Datav\genai_prompt\Interview Questions.pdf"
-
+    pdf_file = "Interview Questions.pdf"
     vectordb = create_vector_store(
         pdf_file
     )

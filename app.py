@@ -55,32 +55,8 @@ if resume is not None:
         )
 
     st.success("Resume Uploaded Successfully")
-    resume_pdf = base64.b64encode(
-        resume_bytes
-    ).decode()
 
-    resume_display = f"""
-    <iframe
-        src="data:application/pdf;base64,{resume_pdf}"
-        width="100%"
-        height="550"
-        type="application/pdf">
-    </iframe>
-    """
-
-    col1, col2 = st.columns([2, 1])
-
-    with col1:
-
-        with st.expander(
-            "📄 Resume Preview",
-            expanded=True
-        ):
-
-            st.markdown(
-                resume_display,
-                unsafe_allow_html=True
-            )
+    col2 = st.container()
 
     with col2:
 
@@ -137,24 +113,6 @@ if interview_pdf is not None:
         pdf_bytes
     ).decode()
 
-    questions_display = f"""
-    <iframe
-        src="data:application/pdf;base64,{questions_pdf}"
-        width="100%"
-        height="550"
-        type="application/pdf">
-    </iframe>
-    """
-
-    with st.expander(
-        "📖 Interview Questions Preview",
-        expanded=False
-    ):
-
-        st.markdown(
-            questions_display,
-            unsafe_allow_html=True
-        )
 
     if st.button(
         "Generate Interview Question",
