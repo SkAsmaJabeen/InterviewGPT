@@ -12,6 +12,7 @@ st.set_page_config(
     page_icon="🤖",
     layout="wide"
 )
+
 st.markdown(
     """
     <h1 style="text-align:center;">
@@ -33,7 +34,8 @@ st.header("📄 Upload Resume")
 
 resume = st.file_uploader(
     "Upload Resume PDF",
-    type=["pdf"]
+    type=["pdf"],
+    key="resume_pdf"
 )
 
 if resume is not None:
@@ -47,7 +49,7 @@ if resume is not None:
 
         tmp.write(resume_bytes)
         resume_path = tmp.name
-        
+
     with st.spinner("Parsing Resume..."):
 
         resume_text = extract_resume_text(
@@ -58,39 +60,47 @@ if resume is not None:
 
     col2 = st.container()
 
-    with col2:
+    st.download_button(
+        "📥 Download Resume",
+        data=resume_bytes,
+        file_name=resume.name,
+        mime="application/pdf",
+        use_container_width=True
+    )
 
-        st.subheader("Detected Skills")
+    st.subheader("Detected Skills")
 
-        skills = extract_skills(
-            resume_text
+    skills = extract_skills(
+        resume_text
+    )
+
+    if skills:
+
+        st.info("### 🛠️ Skills Detected")
+
+        cols = st.columns(2)
+
+        for i, skill in enumerate(skills):
+
+            with cols[i % 2]:
+
+                st.success(
+                    skill.title()
+                )
+
+    else:
+
+        st.warning(
+            "No skills detected."
         )
-
-        if skills:
-
-            st.info("### 🛠️ Skills Detected")
-
-            cols = st.columns(2)
-
-            for i, skill in enumerate(skills):
-
-                with cols[i % 2]:
-
-                    st.success(skill.title())
-
-        else:
-
-            st.warning(
-                "No skills detected."
-            )
 
 st.divider()
 
 st.header("📚 Upload Interview Questions PDF")
-
 interview_pdf = st.file_uploader(
     "Upload Interview Questions PDF",
-    type=["pdf"]
+    type=["pdf"],
+    key="interview_pdf"
 )
 
 if interview_pdf is not None:
@@ -131,15 +141,13 @@ if interview_pdf is not None:
                 vectordb
             )
 
-            st.session_state.question = (
-                question
-            )
+            st.session_state.question = question
 
         st.success(
-            "Question Generated Successfully!"
+            "Interview Question Generated Successfully!"
         )
-
 st.divider()
+
 if "question" in st.session_state:
 
     st.header("🎤 Interview Question")
@@ -154,21 +162,40 @@ if "question" in st.session_state:
         placeholder="Write your answer here..."
     )
 
-    if st.button(
-        "Evaluate Answer",
-        use_container_width=True
-    ):
+    col1, col2 = st.columns([3, 1])
 
-        if answer.strip() == "":
+    with col1:
+
+        evaluate = st.button(
+            "Evaluate Answer",
+            use_container_width=True
+        )
+
+    with col2:
+
+        clear = st.button(
+            "Clear",
+            use_container_width=True
+        )
+
+    if clear:
+
+        st.session_state.pop("question", None)
+        st.session_state.pop("feedback", None)
+        st.rerun()
+
+    if evaluate:
+
+        if not answer.strip():
 
             st.warning(
-                "Please enter your answer."
+                "Please enter your answer before evaluation."
             )
 
         else:
 
             with st.spinner(
-                "Evaluating Answer..."
+                "Evaluating your answer..."
             ):
 
                 feedback = evaluate_answer(
@@ -177,7 +204,6 @@ if "question" in st.session_state:
                 )
 
                 st.session_state.feedback = feedback
-
 if "feedback" in st.session_state:
 
     st.divider()
@@ -193,42 +219,39 @@ if "feedback" in st.session_state:
             st.session_state.feedback
         )
 
-st.divider()
+st.markdown(
+    """
+    <div style="text-align:center;
+                color:gray;
+                font-size:15px;
+                padding-top:20px;
+                padding-bottom:10px;">
+        InterviewGPT | Resume Analysis | RAG | Groq
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 st.markdown(
     """
     <style>
 
     div.stButton > button {
-        border-radius: 12px;
+        border-radius: 10px;
         height: 3em;
+        font-size: 16px;
         font-weight: 600;
     }
 
     div[data-testid="stExpander"] {
-        border-radius: 12px;
+        border-radius: 10px;
+    }
+
+    textarea {
+        border-radius: 10px !important;
     }
 
     </style>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <hr style="margin-top:40px;margin-bottom:15px;">
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <p style="
-        text-align:center;
-        color:gray;
-        font-size:15px;
-    ">
-        🤖 InterviewGPT | Resume Analysis | RAG | Groq
-    </p>
     """,
     unsafe_allow_html=True
 )
